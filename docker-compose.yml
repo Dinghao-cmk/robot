@@ -1,0 +1,44 @@
+services:
+  novnc:
+    image: theasp/novnc:latest
+    container_name: novnc
+    ports:
+      - "8080:8080"
+    environment:
+      DISPLAY_WIDTH: "3000"
+      DISPLAY_HEIGHT: "1800"
+      RUN_XTERM: "no"
+    networks:
+      - ros
+    restart: unless-stopped
+
+  dev:
+    image: ghcr.io/cobot-maker-space/robotlab-devcontainer-linux:humble-sim-2026-09
+    container_name: ros2-dev
+    privileged: true
+    networks:
+      - ros
+    environment:
+      DISPLAY: "novnc:0.0"
+      ROS_LOCALHOST_ONLY: "0"
+      ROS_DOMAIN_ID: "30"
+      RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
+      TURTLEBOT3_MODEL: "waffle"
+      QT_X11_NO_MITSHM: "1"
+    volumes:
+      - ./src:/home/ros2_ws/src
+      - build:/home/ros2_ws/build
+      - install:/home/ros2_ws/install
+      - log:/home/ros2_ws/log
+    working_dir: /home/ros2_ws
+    command: sleep infinity
+    depends_on:
+      - novnc
+
+networks:
+  ros:
+
+volumes:
+  build:
+  install:
+  log:
